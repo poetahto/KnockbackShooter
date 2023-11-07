@@ -2,7 +2,7 @@
 using TMPro;
 using UniRx;
 
-public static class UniRxTMPTools
+public static class UniRxTMPExtensions
 {
     public static IDisposable SubscribeToText<T>(this IObservable<T> source, TMP_Text text)
     {

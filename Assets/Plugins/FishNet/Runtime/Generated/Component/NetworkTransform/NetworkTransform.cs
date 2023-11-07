@@ -8,7 +8,7 @@ using FishNet.Managing.Server;
 using FishNet.Object;
 using FishNet.Serializing;
 using FishNet.Transporting;
-using GameKit.Utilities;
+using GameKit.Dependencies.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -689,7 +689,7 @@ namespace FishNet.Component.Transforming
         /// </summary>
         private void AddCollections(bool asServer)
         {
-            bool asClientAndNotHost = (!asServer && !base.IsServer);
+            bool asClientAndNotHost = (!asServer && !base.IsServerStarted);
 
             /* Even though these collections are nullified on clean up
              * they could still exist on the reinitialization for clientHost if
@@ -810,7 +810,7 @@ namespace FishNet.Component.Transforming
             bool CanMakeKinematic()
             {
                 if (_clientAuthoritative)
-                    return (!base.IsOwner || base.IsServerOnly);
+                    return (!base.IsOwner || base.IsServerOnlyStarted);
                 else
                     return !base.IsServerInitialized;
             }
@@ -992,7 +992,7 @@ namespace FishNet.Component.Transforming
             //If there is a parent try to output the behaviour on it.
             if (_synchronizeParent)
             {
-                if (base.NetworkObject.CurrentParentNetworkObject != null)
+                if (base.NetworkObject.CurrentParentNetworkBehaviour != null)
                 {
                     transform.parent.TryGetComponent<NetworkBehaviour>(out parentBehaviour);
                     if (parentBehaviour == null)
@@ -1360,7 +1360,7 @@ namespace FishNet.Component.Transforming
                 /* Check for being set without using nob.SetParent.
                  * Only check if was previously set inside this component; otherwise
                  * this would spam anytime the parent was null. */
-                if (_parentTransform != null && base.NetworkObject.RuntimeParentTransform != null)
+                if (base.NetworkObject.RuntimeParentNetworkBehaviour != null)
                     Debug.LogWarning($"{gameObject.name} parent object was removed without calling UnsetParent. Use networkObject.UnsetParent() to remove a NetworkObject from it's parent. This is being made a requirement in Fish-Networking v4.");
 
                 _parentBehaviour = null;
@@ -1382,7 +1382,7 @@ namespace FishNet.Component.Transforming
                 else
                 {
                     //Check for being set without using nob.SetParent.
-                    if (base.NetworkObject.RuntimeParentTransform != parent)
+                    if (base.NetworkObject.CurrentParentNetworkBehaviour != _parentBehaviour)
                         Debug.LogWarning($"{gameObject.name} parent was set without calling SetParent. Use networkObject.SetParent(obj) to assign a NetworkObject a new parent. This is being made a requirement in Fish-Networking v4.");
                 }
             }

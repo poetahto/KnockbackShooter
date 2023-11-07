@@ -7,16 +7,16 @@ public class ImGuiWhiteboard : MonoBehaviour
     public static ImGuiWhiteboard Instance { get; private set; }
 
     private readonly List<Action> _drawActions = new();
-    private Rect _windowRect = new(20, 20, 120, 50);
 
     private void Awake()
     {
         Instance = this;
     }
 
-    public void Register(Action action)
+    public IDisposable Register(Action action)
     {
         _drawActions.Add(action);
+        return new DisposableAction(() => Unregister(action));
     }
 
     public void Unregister(Action action)
@@ -24,14 +24,21 @@ public class ImGuiWhiteboard : MonoBehaviour
         _drawActions.Remove(action);
     }
 
+    private Rect _windowRect = new(10, 10, 120, 50);
+
     private void OnGUI()
     {
-        _windowRect = GUILayout.Window(0, _windowRect, RenderGUI, "Whiteboard");
+        _windowRect = GUILayout.Window(0, _windowRect, DrawWindow, "Whiteboard");
     }
 
-    private void RenderGUI(int windowId)
+    private void DrawWindow(int windowId)
     {
+        GUILayout.FlexibleSpace();
+        
         foreach (Action drawAction in _drawActions)
             drawAction.Invoke();
+        
+        GUILayout.FlexibleSpace();
+        GUI.DragWindow();
     }
 }

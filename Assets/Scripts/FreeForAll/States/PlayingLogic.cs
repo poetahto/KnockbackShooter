@@ -15,6 +15,8 @@ namespace FreeForAll
         private FfaSpawn[] _spawns;
         private Dictionary<NetworkConnection, int> _knockoutTable = new();
         private KnockoutManager _knockoutManager;
+        private IDisposable _timerCallback;
+        private List<IDisposable> _respawnCallbacks = new();
         
         public override void InitializeServer()
         {
@@ -24,14 +26,13 @@ namespace FreeForAll
             if (_spawns.Length <= Settings.requiredPlayers)
                 Debug.LogError("There are more players than spawns! This could lead to stacked spawning, so please add more spawns!");
         }
-
-        private IDisposable _timerCallback;
-
+        
         public override void OnServerEnter()
         {
             NetworkManager network = Game.Instance.Network;
             var remainingSpawns = new List<FfaSpawn>(_spawns);
             _knockoutTable.Clear();
+            _respawnCallbacks.Clear();
             Parent.GameTimer.StartTimer(Settings.gameDuration);
             
             _timerCallback = Parent.GameTimer
@@ -50,7 +51,7 @@ namespace FreeForAll
                 Transform randomSpawn = TakeRandomSpawn(remainingSpawns).transform;
                 FfaPlayer instance = Object.Instantiate(Settings.playerPrefab, randomSpawn.position, randomSpawn.rotation);
                 network.ServerManager.Spawn(instance.gameObject, connection);
-                _knockoutManager.AddObject(instance.gameObject).Subscribe(HandlePlayerKnockout);
+                _respawnCallbacks.Add(_knockoutManager.AddObject(instance.gameObject).Subscribe(ServerHandlePlayerKnockout));
                 _knockoutTable.Add(connection, 0);
             }
         }
@@ -63,9 +64,12 @@ namespace FreeForAll
         public override void OnServerExit()
         {
             _timerCallback?.Dispose();
+
+            foreach (IDisposable respawnCallback in _respawnCallbacks)
+                respawnCallback?.Dispose();
         }
 
-        private void HandlePlayerKnockout(KnockoutManager.KnockoutData data)
+        private void ServerHandlePlayerKnockout(KnockoutManager.KnockoutData data)
         {
             var player = data.Object.GetComponent<FfaPlayer>();
             _knockoutTable[player.Owner]++;
@@ -75,7 +79,7 @@ namespace FreeForAll
                 // respawn player if they have lives left
                 Transform randomSpawn = _spawns[Random.Range(0, _spawns.Length)].transform;
                 player.transform.SetPositionAndRotation(randomSpawn.position, randomSpawn.rotation);
-                _knockoutManager.AddObject(player.gameObject).Subscribe(HandlePlayerKnockout);
+                _respawnCallbacks.Add(_knockoutManager.AddObject(player.gameObject).Subscribe(ServerHandlePlayerKnockout));
             }
             else
             {
@@ -84,10 +88,7 @@ namespace FreeForAll
                 Debug.Log($"Player {player.name} was eliminated!");
                 _knockoutTable.Remove(player.Owner);
                 if (_knockoutTable.Count <= 1)
-                {
-                    // victory
                     Parent.GameState.Value = FfaGameMode.State.GameOver;
-                } 
             }
         }
 
@@ -102,11 +103,12 @@ namespace FreeForAll
         public override void OnGui()
         {
             GUILayout.Label($"Time until sudden death: {Parent.GameTimer.Remaining}");
-            
+        }
+
+        public override void OnServerGui()
+        {
             foreach (KeyValuePair<NetworkConnection, int> playersToDeaths in _knockoutTable)
                 GUILayout.Label($"Player {playersToDeaths.Key.ClientId}: {playersToDeaths.Value} Deaths");
         }
-
-        // todo: if playing for too long, go to sudden death
     }
 }

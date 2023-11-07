@@ -4,15 +4,6 @@ using UnityEditor.IMGUI.Controls;
 #endif
 using UnityEngine;
 
-public static class Transform1D
-{
-    public static float SmoothStart2(float t) => t * t;
-    public static float SmoothStart3(float t) => t * t * t;
-    public static float SmoothStart4(float t) => t * t * t * t;
-    public static float SmoothStart5(float t) => t * t * t * t * t;
-    public static float SmoothStart6(float t) => t * t * t * t * t * t;
-}
-
 namespace FreeForAll
 {
     public class BoundsKnockoutStrategy : KnockoutStrategy
@@ -43,15 +34,12 @@ namespace FreeForAll
             private void OnSceneGUI()
             {
                 var t = (BoundsKnockoutStrategy) target;
-
                 using var _ = new Handles.DrawingScope(Color.red);
                 
                 // Draw the handle for editing bounds
                 t.bounds.center = t.transform.position;
                 _handle.size = t.bounds.size;
                 _handle.center = t.bounds.center;
-                // _handle.wireframeColor = Color.red;
-                // _handle.handleColor = Color.red;
                 EditorGUI.BeginChangeCheck();
                 _handle.DrawHandle();
                 
@@ -67,17 +55,25 @@ namespace FreeForAll
                 {
                     foreach (GameObject obj in t.Manager.Targets)
                     {
-                        var objPos = obj.transform.position;
-                        var farAway = (objPos - t.bounds.center).normalized * (t.bounds.extents.magnitude);
+                        // Goal: find out how far away the player is from the edge of the box.
+                        // It's made complicated since we are inside of it.
+                        // First, we trace a line from the center towards the target, and try to snap it to the edge of the bounds if we overshot.
+                        // Then, adjust the player's position if they have mesh bounds.
+                        // Finally, get the midpoint for drawing text.
+                        
+                        Vector3 objPos = obj.transform.position;
+                        Vector3 farAway = (objPos - t.bounds.center).normalized * (t.bounds.extents.magnitude);
                         t.bounds.IntersectRay(new Ray(farAway, (objPos - farAway).normalized), out float distance);
                         farAway += (objPos - farAway).normalized * distance;
-                        var closest = t.bounds.ClosestPoint(farAway);
+                        Vector3 closest = t.bounds.ClosestPoint(farAway);
                         if (obj.TryGetComponent(out MeshRenderer mr))
                             objPos = mr.bounds.ClosestPoint(closest);
-                        var mid = ((closest - objPos) * 0.5f) + objPos;
+                        Vector3 mid = ((closest - objPos) * 0.5f) + objPos;
+                        
                         Handles.DrawLine(objPos, closest);
                         Handles.DrawWireCube(objPos, Vector3.one * 0.25f);
                         Handles.DrawWireCube(closest, Vector3.one * 0.25f);
+                        // todo: this danger percent is pretty useful for gameplay; make it not editor-only
                         float percent = Transform1D.SmoothStart2(1 - Mathf.Clamp01((closest - objPos).magnitude / (closest - t.bounds.center).magnitude));
                         Handles.Label(mid, $"Danger: {percent}");
                     }

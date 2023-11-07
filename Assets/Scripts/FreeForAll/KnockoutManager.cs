@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace FreeForAll
 {
+    // todo: make sure this is synced when it needs to be
     public class KnockoutManager : MonoBehaviour
     {
         private readonly Subject<KnockoutData> _playerKnockedOut = new();

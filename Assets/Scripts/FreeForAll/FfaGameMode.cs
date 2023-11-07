@@ -3,6 +3,7 @@ using FishNet.Object;
 using FishNet.Object.Synchronizing;
 using UniRx;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 // wait until min players have joined
 // start countdown
@@ -12,7 +13,7 @@ using UnityEngine;
 
 namespace FreeForAll
 {
-    public class GameModeFreeForAll : NetworkBehaviour
+    public class FfaGameMode : NetworkBehaviour
     {
         public enum State
         {
@@ -31,9 +32,12 @@ namespace FreeForAll
     
         public readonly SyncVar<State> GameState = new();
         public readonly SyncTimer CountdownTimer = new();
+        public readonly SyncTimer GameTimer = new();
         private Dictionary<State, StateLogic> _logicTable;
+        
+        public FfaGameModeSettings Settings { get; set; }
 
-        private void Start()
+        public override void OnStartNetwork()
         {
             _logicTable = new Dictionary<State, StateLogic>()
             {
@@ -44,8 +48,13 @@ namespace FreeForAll
                 {State.GameOver, gameOverLogic},
             };
 
+            Settings = Addressables.LoadAssetAsync<FfaGameModeSettings>("ffa_settings").WaitForCompletion();
+
             foreach (StateLogic logic in _logicTable.Values)
+            {
                 logic.Parent = this;
+                logic.Initialize();
+            }
         
             GameState
                 .ObserveChanged()
@@ -67,6 +76,18 @@ namespace FreeForAll
                 });
         
             ImGuiWhiteboard.Instance.Register(DrawGUI).AddTo(this);
+        }
+
+        public override void OnStartClient()
+        {
+            foreach (StateLogic logic in _logicTable.Values)
+                logic.InitializeClient();
+        }
+
+        public override void OnStartServer()
+        {
+            foreach (StateLogic logic in _logicTable.Values)
+                logic.InitializeServer();
         }
 
         private void DrawGUI()

@@ -21,11 +21,11 @@ public class Game : IDisposable
     {
         Instance = this;
         Settings = settings;
-        FishNetManager = InstanceFinder.NetworkManager;
+        Network = InstanceFinder.NetworkManager;
     }
     
     public GameSettings Settings { get; }
-    public NetworkManager FishNetManager { get; }
+    public NetworkManager Network { get; }
     
     /// <summary>
     /// Run the game, as if the player has launched the game normally.
@@ -72,11 +72,11 @@ public class Game : IDisposable
     public async UniTask HostGame(ushort port, LevelSettings initialLevel)
     {
         await UniTaskSceneTools.UnloadActiveScene();
-        FishNetManager.ServerManager.StartConnection(port);
-        FishNetManager.ClientManager.StartConnection();
-        await UniTask.WaitUntil(() => FishNetManager.ServerManager.Started);
-        FishNetManager.SceneManager.LoadGlobalScenes(new SceneLoadData(initialLevel.sceneName));
-        FishNetManager.ServerManager.OnServerConnectionState += WaitForServerToStop;
+        Network.ServerManager.StartConnection(port);
+        Network.ClientManager.StartConnection();
+        await UniTask.WaitUntil(() => Network.ServerManager.Started);
+        Network.SceneManager.LoadGlobalScenes(new SceneLoadData(initialLevel.sceneName));
+        Network.ServerManager.OnServerConnectionState += WaitForServerToStop;
 
         ImGuiWhiteboard.Instance.Register(DrawHostGUI);
     }
@@ -86,7 +86,7 @@ public class Game : IDisposable
         if (state.ConnectionState != LocalConnectionState.Stopped)
             return;
 
-        FishNetManager.ServerManager.OnServerConnectionState -= WaitForServerToStop;
+        Network.ServerManager.OnServerConnectionState -= WaitForServerToStop;
         ImGuiWhiteboard.Instance.Unregister(DrawHostGUI);
         UniTaskSceneTools.ChangeActiveScene(Settings.mainMenuSceneName).Forget();
     }
@@ -94,9 +94,9 @@ public class Game : IDisposable
     public async UniTask JoinGame(ushort port, string address)
     {
         await UniTaskSceneTools.UnloadActiveScene();
-        FishNetManager.ClientManager.StartConnection(address, port);
-        await UniTask.WaitUntil(() => FishNetManager.ClientManager.Started);
-        FishNetManager.ClientManager.OnClientConnectionState += WaitForClientToStop;
+        Network.ClientManager.StartConnection(address, port);
+        await UniTask.WaitUntil(() => Network.ClientManager.Started);
+        Network.ClientManager.OnClientConnectionState += WaitForClientToStop;
         
         ImGuiWhiteboard.Instance.Register(DrawClientGUI);
     }
@@ -106,38 +106,38 @@ public class Game : IDisposable
         if (state.ConnectionState != LocalConnectionState.Stopped)
             return;
 
-        FishNetManager.ClientManager.OnClientConnectionState -= WaitForClientToStop;
+        Network.ClientManager.OnClientConnectionState -= WaitForClientToStop;
         ImGuiWhiteboard.Instance.Unregister(DrawClientGUI);
         UniTaskSceneTools.ChangeActiveScene(Settings.mainMenuSceneName).Forget();
     }
 
     public void Dispose()
     {
-        if (FishNetManager.ServerManager.Started)
-            FishNetManager.ServerManager.StopConnection(true);
+        if (Network.ServerManager.Started)
+            Network.ServerManager.StopConnection(true);
 
-        if (FishNetManager.ClientManager.Started)
-            FishNetManager.ClientManager.StopConnection();
+        if (Network.ClientManager.Started)
+            Network.ClientManager.StopConnection();
     }
 
     private void DrawHostGUI()
     {
         GUILayout.Label("[GAME:HOST]");
-        GUILayout.Label($"{FishNetManager.ServerManager.Clients.Count} Total Players");
+        GUILayout.Label($"{Network.ServerManager.Clients.Count} Total Players");
 
-        foreach (NetworkConnection networkConnection in FishNetManager.ServerManager.Clients.Values)
+        foreach (NetworkConnection networkConnection in Network.ServerManager.Clients.Values)
             GUILayout.Label($"Player: ID={networkConnection.ClientId}");
 
         if (GUILayout.Button("Stop Server"))
-            FishNetManager.ServerManager.StopConnection(true);
+            Network.ServerManager.StopConnection(true);
     }
 
     private void DrawClientGUI()
     {
         GUILayout.Label("[GAME:CLIENT]");
-        GUILayout.Label($"Local client ID: {FishNetManager.ClientManager.Connection.ClientId}");
+        GUILayout.Label($"Local client ID: {Network.ClientManager.Connection.ClientId}");
 
         if (GUILayout.Button("Disconnect"))
-            FishNetManager.ClientManager.StopConnection();
+            Network.ClientManager.StopConnection();
     }
 }

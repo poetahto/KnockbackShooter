@@ -7,32 +7,30 @@ namespace FreeForAll
     [Serializable]
     public class CountdownLogic : StateLogic
     {
-        public float countdownDuration = 10;
-
-        private IDisposable _disposable;
+        private IDisposable _countdownCallback;
         
         public override void OnServerEnter()
         {
-            Parent.CountdownTimer.StartTimer(countdownDuration);
+            Parent.CountdownTimer.StartTimer(Settings.countdownDuration);
             
-            _disposable = Parent.CountdownTimer
+            _countdownCallback = Parent.CountdownTimer
                 .ObserveComplete()
-                .SubscribeWithState(Parent, (_, all) => all.GameState.Value = GameModeFreeForAll.State.Playing);
+                .SubscribeWithState(Parent, (_, all) => all.GameState.Value = FfaGameMode.State.Playing);
         }
 
         public override void OnServerLogic()
         {
             Parent.CountdownTimer.Update(Time.deltaTime);
             
-            int currentPlayers = Game.Instance.FishNetManager.ServerManager.Clients.Count;
+            int currentPlayers = Game.Instance.Network.ServerManager.Clients.Count;
             
-            if (currentPlayers < Parent.waitingLogic.requiredPlayers)
-                Parent.GameState.Value = GameModeFreeForAll.State.Waiting;
+            if (currentPlayers < Settings.requiredPlayers)
+                Parent.GameState.Value = FfaGameMode.State.Waiting;
         }
 
         public override void OnServerExit()
         {
-            _disposable?.Dispose();
+            _countdownCallback?.Dispose();
         }
 
         public override void OnGui()

@@ -18,7 +18,7 @@ public class NetworkUIView : MonoBehaviour
     private void Start()
     {
         _viewTable = new Dictionary<NetworkConnection, ConnectionUIView>();
-        Game.Instance.FishNetManager.ServerManager.OnServerConnectionState += HandleServerChange;
+        Game.Instance.Network.ServerManager.OnServerConnectionState += HandleServerChange;
         gameObject.SetActive(false);
     }
 
@@ -28,7 +28,7 @@ public class NetworkUIView : MonoBehaviour
             return;
         
         gameObject.SetActive(true);
-        NetworkManager network = Game.Instance.FishNetManager;
+        NetworkManager network = Game.Instance.Network;
         network.ServerManager.OnRemoteConnectionState += HandleRemoteClientChange;
         network.ServerManager.OnAuthenticationResult += HandleAuthenticationFinish;
 

@@ -6,20 +6,18 @@ namespace FreeForAll
     [Serializable]
     public class WaitingLogic : StateLogic
     {
-        public int requiredPlayers = 2;
-
         public override void OnServerLogic()
         {
-            int currentPlayers = Game.Instance.FishNetManager.ServerManager.Clients.Count;
+            int currentPlayers = Game.Instance.Network.ServerManager.Clients.Count;
 
-            if (currentPlayers >= requiredPlayers)
-                Parent.GameState.Value = GameModeFreeForAll.State.Countdown;
+            if (currentPlayers >= Settings.requiredPlayers)
+                Parent.GameState.Value = FfaGameMode.State.Countdown;
         }
 
         public override void OnGui()
         {
-            int currentPlayers = Game.Instance.FishNetManager.ClientManager.Clients.Count;
-            GUILayout.Label($"{currentPlayers}/{requiredPlayers} required players.");
+            int currentPlayers = Game.Instance.Network.ClientManager.Clients.Count;
+            GUILayout.Label($"{currentPlayers}/{Settings.requiredPlayers} required players.");
         }
     }
 }

@@ -10,7 +10,7 @@ public class FreeForAllUIView : MonoBehaviour
     
     private void Start()
     {
-        var gameMode = FindAnyObjectByType<GameModeFreeForAll>();
+        var gameMode = FindAnyObjectByType<FfaGameMode>();
         
         if (!gameMode) 
             return;

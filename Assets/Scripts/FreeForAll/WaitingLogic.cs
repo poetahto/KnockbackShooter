@@ -6,8 +6,7 @@ namespace FreeForAll
     [Serializable]
     public class WaitingLogic : StateLogic
     {
-        [SerializeField] 
-        private int requiredPlayers = 2;
+        public int requiredPlayers = 2;
 
         public override void OnServerLogic()
         {

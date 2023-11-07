@@ -51,4 +51,20 @@ public static class UniRxFishNetExtensions
             action => serverManager.OnAuthenticationResult -= action
         );
     }
+
+    public static IObservable<Unit> ObserveComplete(this SyncTimer timer)
+    {
+        return Observable.FromEvent<SyncTimer.SyncTypeChanged, Unit>(
+            action =>
+            {
+                return (op, prev, next, server) =>
+                {
+                    if (op == SyncTimerOperation.Finished)
+                        action(Unit.Default);
+                };
+            },
+            changed => timer.OnChange += changed,
+            changed => timer.OnChange -= changed
+        );
+    }
 }

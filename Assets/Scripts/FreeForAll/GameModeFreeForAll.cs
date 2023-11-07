@@ -23,22 +23,14 @@ namespace FreeForAll
             GameOver,
         }
     
-        [SerializeField]
-        private WaitingLogic waitingLogic;
-    
-        [SerializeField]
-        private CountdownLogic countdownLogic;
-    
-        [SerializeField]
-        private PlayingLogic playingLogic;
-    
-        [SerializeField]
-        private SuddenDeathLogic suddenDeathLogic;
-    
-        [SerializeField]
-        private GameOverLogic gameOverLogic;
+        public WaitingLogic waitingLogic;
+        public CountdownLogic countdownLogic;
+        public PlayingLogic playingLogic;
+        public SuddenDeathLogic suddenDeathLogic;
+        public GameOverLogic gameOverLogic;
     
         public readonly SyncVar<State> GameState = new();
+        public readonly SyncTimer CountdownTimer = new();
         private Dictionary<State, StateLogic> _logicTable;
 
         private void Start()

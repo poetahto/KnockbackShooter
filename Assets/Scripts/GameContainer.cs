@@ -13,7 +13,6 @@ public class GameContainer : MonoBehaviour
 
     private void Awake()
     {
-        DontDestroyOnLoad(gameObject);
         _game = new Game(gameSettings);
     }
 

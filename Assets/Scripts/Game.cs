@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using FishNet;
 using FishNet.Managing;
+using FishNet.Managing.Scened;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Global state for the game.
@@ -26,44 +27,59 @@ public class Game : IDisposable
     /// <summary>
     /// Run the game, as if the player has launched the game normally.
     /// </summary>
-    public void InitializeNormal()
+    public async UniTask InitializeNormal()
     {
         Debug.Log("[GAME] Launching the game.");
-        SceneManager.LoadScene(Settings.mainMenuSceneName);
+        await SceneUtil.AdditiveLoadAndSetActive(Settings.mainMenuSceneName);
     }
-
+    
     /// <summary>
     /// Run the game from the Editor's "Enter PlayMode", launching directly into a scene.
     /// </summary>
-    public void InitializeEditor()
+    public async UniTask InitializeEditor(string sceneName)
     {
         EditorLaunchContext ctx = Settings.editorContext;
-        Debug.Log($"[GAME] Launching in an editor environment: {ctx.sceneName}");
+        Debug.Log($"[GAME] Launching in an editor environment: {sceneName}");
         
-        if (Settings.gameplayLevels.Any(gameplayLevel => gameplayLevel.sceneName == ctx.sceneName))
+        LevelSettings initialLevel = Settings.gameplayLevels
+            .FirstOrDefault(gameplayLevel => gameplayLevel.sceneName == sceneName);
+        
+        if (initialLevel != null)
         {
             Debug.Log($"Launching with networking: {ctx.networkType.ToString()}");
             
             switch (ctx.networkType)
             {
                 case NetworkLaunchType.Host:
-                    FishNetManager.ServerManager.StartConnection((ushort) ctx.hostPort);
-                    FishNetManager.ClientManager.StartConnection();
+                    await HostGame((ushort) ctx.hostPort, initialLevel);
                     break;
-                
                 case NetworkLaunchType.Client:
-                    FishNetManager.ClientManager.StartConnection(ctx.clientAddress, (ushort) ctx.clientPort);
+                    await JoinGame((ushort) ctx.clientPort, ctx.clientAddress);
                     break;
-                
-                default: throw new ArgumentOutOfRangeException();
+                default: 
+                    throw new ArgumentOutOfRangeException();
             }
-            
-            SceneManager.LoadScene(ctx.sceneName);
         }
         else // Fallback - just load the scene normally
         {
-            SceneManager.LoadScene(ctx.sceneName);
+            await SceneUtil.AdditiveLoadAndSetActive(sceneName);
         }
+    }
+    
+    public async UniTask HostGame(ushort port, LevelSettings initialLevel)
+    {
+        await SceneUtil.UnloadActiveScene();
+        FishNetManager.ServerManager.StartConnection(port);
+        FishNetManager.ClientManager.StartConnection();
+        await UniTask.WaitUntil(() => FishNetManager.ServerManager.Started);
+        FishNetManager.SceneManager.LoadGlobalScenes(new SceneLoadData(initialLevel.sceneName));
+    }
+     
+    public async UniTask JoinGame(ushort port, string address)
+    {
+        await SceneUtil.UnloadActiveScene();
+        FishNetManager.ClientManager.StartConnection(address, port);
+        await UniTask.WaitUntil(() => FishNetManager.ClientManager.Started);
     }
     
     public void Dispose()

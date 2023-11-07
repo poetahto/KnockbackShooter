@@ -26,8 +26,6 @@ public enum NetworkLaunchType
 [Serializable]
 public class EditorLaunchContext
 {
-    public string sceneName; // Set automatically by the Entrypoint
-    
     public NetworkLaunchType networkType = NetworkLaunchType.Host;
     public int hostPort = 5674;
     public int clientPort = 5674;

@@ -15,3 +15,10 @@ MonoBehaviour:
   mainMenuSceneName: MainMenu
   gameplayLevels:
   - sceneName: SampleScene
+  - sceneName: PlayerTest
+  editorContext:
+    sceneName: PlayerTest
+    networkType: 1
+    hostPort: 5674
+    clientPort: 5674
+    clientAddress: localhost

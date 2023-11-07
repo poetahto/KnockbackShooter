@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEditor.SceneManagement;
@@ -74,6 +75,33 @@ namespace Editor
             
             if (!IsInBuildSettings(currentScene.path) && GUILayout.Button("Add to Build Settings"))
                 AddToBuildSettings(currentScene.path);
+            
+            GUI.color = Color.white;
+
+            // Dropdown for setting the editor context when launching scenes
+            EditorLaunchContext ctx = _settings.editorContext;
+            
+            if (EditorGUILayout.DropdownButton(new GUIContent(ctx.networkType.ToString()), FocusType.Keyboard))
+            {
+                var menu = new GenericMenu();
+                menu.AddItem(new GUIContent("Host"), ctx.networkType == NetworkLaunchType.Host, () => ctx.networkType = NetworkLaunchType.Host);
+                menu.AddItem(new GUIContent("Client"), ctx.networkType == NetworkLaunchType.Client, () => ctx.networkType = NetworkLaunchType.Client);
+                menu.ShowAsContext();
+            }
+
+            switch (ctx.networkType)
+            {
+                case NetworkLaunchType.Host:
+                    ctx.hostPort = EditorGUILayout.IntField("Host Port", ctx.hostPort);
+                    break;
+                
+                case NetworkLaunchType.Client:
+                    ctx.clientPort = EditorGUILayout.IntField("Client Port", ctx.clientPort);
+                    ctx.clientAddress = EditorGUILayout.TextField("Client Address", ctx.clientAddress);
+                    break;
+                
+                default: throw new ArgumentOutOfRangeException();
+            }
         }
 
         private static bool IsInBuildSettings(string scenePath)

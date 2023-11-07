@@ -7,8 +7,14 @@ public class GameSettings : ScriptableObject
 {
     public string mainMenuSceneName;
     public List<LevelSettings> gameplayLevels;
-    
     public EditorLaunchContext editorContext;
+}
+
+[Serializable]
+public class LevelSettings
+{
+    public string sceneName;
+    // todo: more level info (like gameMode, ect.)
 }
 
 public enum NetworkLaunchType
@@ -26,11 +32,4 @@ public class EditorLaunchContext
     public int hostPort = 5674;
     public int clientPort = 5674;
     public string clientAddress = "localhost";
-}
-
-[Serializable]
-public class LevelSettings
-{
-    public string sceneName;
-    // todo: more level info (like gameMode, ect.)
 }

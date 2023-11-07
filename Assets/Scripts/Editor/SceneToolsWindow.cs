@@ -23,8 +23,8 @@ namespace Editor
 
         private void OnEnable()
         {
-            EditorSceneManager.sceneOpening += HandleSceneOpening;
             _settings = Addressables.LoadAssetAsync<GameSettings>("game_settings").WaitForCompletion();
+            EditorSceneManager.sceneOpening += HandleSceneOpening;
         }
 
         private void OnDisable()

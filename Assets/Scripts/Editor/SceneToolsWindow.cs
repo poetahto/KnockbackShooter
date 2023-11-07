@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
+using FishNet.Object;
 using UnityEditor;
-using UnityEditor.PackageManager;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -44,7 +44,7 @@ namespace Editor
         private void OnGUI()
         {
             if (GUILayout.Button("Entrypoint"))
-                EditorSceneManager.OpenScene("Assets/Scenes/Entrypoint.unity", OpenSceneMode.Single);
+                EditorSceneManager.OpenScene("Assets/Scenes/Persistent.unity", OpenSceneMode.Single);
 
             if (EditorPrefs.HasKey("previous_scene"))
             {
@@ -56,13 +56,12 @@ namespace Editor
 
             Scene currentScene = SceneManager.GetActiveScene();
 
-            // todo: try and check if we want this to be gameplay (some specific component?)
-            if (_settings.gameplayLevels.All(settings => settings.sceneName != currentScene.name))
+            if (FindAnyObjectByType<NetworkBehaviour>(FindObjectsInactive.Include) && _settings.networkedLevels.All(settings => settings.sceneName != currentScene.name))
             {
-                if (GUILayout.Button("Register Level"))
+                if (ColoredButton("Register Level", Color.red))
                 {
                     // Register this scene with the gameplay levels
-                    _settings.gameplayLevels.Add(new LevelSettings
+                    _settings.networkedLevels.Add(new LevelSettings
                     {
                         sceneName = currentScene.name,
                     });
@@ -71,12 +70,8 @@ namespace Editor
             }
             
             // Add this scene to the build settings if it hasn't yet been added
-            GUI.color = Color.red;
-            
-            if (!IsInBuildSettings(currentScene.path) && GUILayout.Button("Add to Build Settings"))
+            if (!IsInBuildSettings(currentScene.path) && ColoredButton("Add to Build Settings", Color.red))
                 AddToBuildSettings(currentScene.path);
-            
-            GUI.color = Color.white;
 
             // Dropdown for setting the editor context when launching scenes
             EditorLaunchContext ctx = _settings.editorContext;
@@ -94,14 +89,20 @@ namespace Editor
                 case NetworkLaunchType.Host:
                     ctx.hostPort = EditorGUILayout.IntField("Host Port", ctx.hostPort);
                     break;
-                
                 case NetworkLaunchType.Client:
                     ctx.clientPort = EditorGUILayout.IntField("Client Port", ctx.clientPort);
                     ctx.clientAddress = EditorGUILayout.TextField("Client Address", ctx.clientAddress);
                     break;
-                
                 default: throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private static bool ColoredButton(string label, Color color)
+        {
+            GUI.color = color;
+            bool result = GUILayout.Button(label);
+            GUI.color = Color.white;
+            return result;
         }
 
         private static bool IsInBuildSettings(string scenePath)

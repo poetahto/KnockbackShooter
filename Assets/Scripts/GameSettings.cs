@@ -6,15 +6,8 @@ using UnityEngine;
 public class GameSettings : ScriptableObject
 {
     public string mainMenuSceneName;
-    public List<LevelSettings> gameplayLevels;
+    public List<LevelSettings> networkedLevels;
     public EditorLaunchContext editorContext;
-}
-
-[Serializable]
-public class LevelSettings
-{
-    public string sceneName;
-    // todo: more level info (like gameMode, ect.)
 }
 
 public enum NetworkLaunchType

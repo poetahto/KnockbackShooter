@@ -5,6 +5,7 @@ using FishNet;
 using FishNet.Managing;
 using FishNet.Managing.Scened;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Global state for the game.
@@ -30,7 +31,7 @@ public class Game : IDisposable
     public async UniTask InitializeNormal()
     {
         Debug.Log("[GAME] Launching the game.");
-        await SceneUtil.AdditiveLoadAndSetActive(Settings.mainMenuSceneName);
+        await UniTaskSceneTools.LoadAndSetActive(Settings.mainMenuSceneName, LoadSceneMode.Additive);
     }
     
     /// <summary>
@@ -41,7 +42,7 @@ public class Game : IDisposable
         EditorLaunchContext ctx = Settings.editorContext;
         Debug.Log($"[GAME] Launching in an editor environment: {sceneName}");
         
-        LevelSettings initialLevel = Settings.gameplayLevels
+        LevelSettings initialLevel = Settings.networkedLevels
             .FirstOrDefault(gameplayLevel => gameplayLevel.sceneName == sceneName);
         
         if (initialLevel != null)
@@ -62,13 +63,13 @@ public class Game : IDisposable
         }
         else // Fallback - just load the scene normally
         {
-            await SceneUtil.AdditiveLoadAndSetActive(sceneName);
+            await UniTaskSceneTools.ChangeActiveScene(sceneName);
         }
     }
     
     public async UniTask HostGame(ushort port, LevelSettings initialLevel)
     {
-        await SceneUtil.UnloadActiveScene();
+        await UniTaskSceneTools.UnloadActiveScene();
         FishNetManager.ServerManager.StartConnection(port);
         FishNetManager.ClientManager.StartConnection();
         await UniTask.WaitUntil(() => FishNetManager.ServerManager.Started);
@@ -77,7 +78,7 @@ public class Game : IDisposable
      
     public async UniTask JoinGame(ushort port, string address)
     {
-        await SceneUtil.UnloadActiveScene();
+        await UniTaskSceneTools.UnloadActiveScene();
         FishNetManager.ClientManager.StartConnection(address, port);
         await UniTask.WaitUntil(() => FishNetManager.ClientManager.Started);
     }

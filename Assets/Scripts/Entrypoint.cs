@@ -7,18 +7,28 @@ public static class Entrypoint
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static async void Initialize()
     {
-#if UNITY_EDITOR
-        Scene activeScene = SceneManager.GetActiveScene();
-        string desiredSceneName = activeScene.name;
-#endif
+        string currentSceneName = SceneManager.GetActiveScene().name;
         
-        SceneManager.LoadScene("Entrypoint");
-        await Task.Yield(); // still has the issue where you need to wait a frame for scripts to get Awake
-        
+        if (currentSceneName != "Entrypoint")
+        {
 #if UNITY_EDITOR
-        Game.Instance.InitializeToScene(desiredSceneName);
+            var editorSettings = new EditorInitializationSettings
+            {
+                SceneName = currentSceneName,
+                IsHost = true,
+            };
+        
+            SceneManager.LoadScene("Entrypoint");
+            await Task.Yield(); // still has the issue where you need to wait a frame for scripts to get Awake
+            Game.Instance.InitializeEditor(editorSettings);
 #else
-        Game.Instance.InitializeNormal();
+            Debug.LogError("Entrypoint should be the first scene in build settings!");
 #endif
+        }
+        else
+        {
+            await Task.Yield(); // This time it's because we are BeforeSceneLoad
+            Game.Instance.InitializeNormal();
+        }
     }
 }

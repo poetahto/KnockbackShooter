@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameContainer : MonoBehaviour
 {
@@ -20,9 +22,10 @@ public class GameContainer : MonoBehaviour
     }
 }
 
-[Serializable]
-public class GameSettings
+public struct EditorInitializationSettings
 {
+    public string SceneName;
+    public bool IsHost;
 }
 
 public class Game : IDisposable
@@ -44,11 +47,19 @@ public class Game : IDisposable
     
     public void InitializeNormal()
     {
-        Debug.Log("Normal init!");
+        SceneManager.LoadScene(_settings.mainMenuSceneName);
     }
 
-    public void InitializeToScene(string sceneName)
+    public void InitializeEditor(EditorInitializationSettings editorSettings)
     {
-        Debug.Log($"Scene init! {sceneName}");
+        if (_settings.gameplayLevels.Any(gameplayLevel => gameplayLevel.sceneName == editorSettings.SceneName))
+        {
+            // todo: load networking and other setup from settings, launch game
+            SceneManager.LoadScene(editorSettings.SceneName);
+        }
+        else // Fallback - just load the scene normally
+        {
+            SceneManager.LoadScene(editorSettings.SceneName);
+        }
     }
 }

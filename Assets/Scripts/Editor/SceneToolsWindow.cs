@@ -43,7 +43,7 @@ namespace Editor
 
         private void OnGUI()
         {
-            if (GUILayout.Button("Entrypoint"))
+            if (GUILayout.Button("Load Persistent"))
                 EditorSceneManager.OpenScene("Assets/Scenes/Persistent.unity", OpenSceneMode.Single);
 
             if (EditorPrefs.HasKey("previous_scene"))

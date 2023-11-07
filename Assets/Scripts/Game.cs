@@ -5,7 +5,6 @@ using FishNet;
 using FishNet.Connection;
 using FishNet.Managing;
 using FishNet.Managing.Scened;
-using FishNet.Managing.Server;
 using FishNet.Transporting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -127,7 +126,7 @@ public class Game : IDisposable
         GUILayout.Label($"{FishNetManager.ServerManager.Clients.Count} Total Players");
 
         foreach (NetworkConnection networkConnection in FishNetManager.ServerManager.Clients.Values)
-            GUILayout.Label($"Player: {networkConnection.ClientId}");
+            GUILayout.Label($"Player: ID={networkConnection.ClientId}");
 
         if (GUILayout.Button("Stop Server"))
             FishNetManager.ServerManager.StopConnection(true);

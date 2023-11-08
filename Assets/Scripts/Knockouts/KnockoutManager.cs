@@ -4,7 +4,7 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 
-namespace FreeForAll
+namespace Knockouts
 {
     // todo: make sure this is synced when it needs to be
     public class KnockoutManager : MonoBehaviour

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace FreeForAll
+namespace Knockouts
 {
     public abstract class KnockoutStrategy : MonoBehaviour
     {

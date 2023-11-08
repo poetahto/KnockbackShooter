@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
-using UniRx;
+using FreeForAll.GameStates;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
@@ -24,87 +25,56 @@ namespace FreeForAll
             GameOver,
         }
     
-        public WaitingLogic waitingLogic;
-        public CountdownLogic countdownLogic;
-        public PlayingLogic playingLogic;
-        public SuddenDeathLogic suddenDeathLogic;
-        public GameOverLogic gameOverLogic;
-    
+        [SerializeField]
+        private WaitingLogic waitingLogic;
+        
+        [SerializeField]
+        private CountdownLogic countdownLogic;
+        
+        [SerializeField]
+        private PlayingLogic playingLogic;
+        
+        [SerializeField]
+        private SuddenDeathLogic suddenDeathLogic;
+        
+        [SerializeField]
+        private GameOverLogic gameOverLogic;
+        
         public readonly SyncVar<State> GameState = new();
         public readonly SyncTimer CountdownTimer = new();
         public readonly SyncTimer GameTimer = new();
-        private Dictionary<State, StateLogic> _logicTable;
+        
+        private NetworkedStateMachine<State> _fsm;
         
         public FfaGameModeSettings Settings { get; set; }
 
-        public override void OnStartNetwork()
+        private void Awake()
         {
-            _logicTable = new Dictionary<State, StateLogic>()
+            waitingLogic.Parent = this;
+            countdownLogic.Parent = this;
+            playingLogic.Parent = this;
+            suddenDeathLogic.Parent = this;
+            gameOverLogic.Parent = this;
+            
+            _fsm = new NetworkedStateMachine<State>(new Dictionary<State, NetworkedStateLogic>()
             {
-                {State.Waiting, waitingLogic},
-                {State.Countdown, countdownLogic},
-                {State.Playing, playingLogic},
-                {State.SuddenDeath, suddenDeathLogic},
-                {State.GameOver, gameOverLogic},
-            };
-
+                { State.Waiting, waitingLogic },
+                { State.Countdown, countdownLogic },
+                { State.Playing, playingLogic },
+                { State.SuddenDeath, suddenDeathLogic },
+                { State.GameOver, gameOverLogic },
+            });
+            
             Settings = Addressables.LoadAssetAsync<FfaGameModeSettings>("ffa_settings").WaitForCompletion();
-
-            foreach (StateLogic logic in _logicTable.Values)
-            {
-                logic.Parent = this;
-                logic.Initialize();
-            }
-        
-            GameState
-                .ObserveChanged()
-                .SubscribeWithState(_logicTable, (data, logic) =>
-                {
-                    if (data.AsServer)
-                    {
-                        logic[data.Previous].OnServerExit();
-                        logic[data.Next].OnServerEnter();
-                    }
-                    else
-                    {
-                        logic[data.Previous].OnClientEnter();
-                        logic[data.Next].OnClientExit();
-                    }
-                
-                    logic[data.Previous].OnEnter();
-                    logic[data.Next].OnExit();
-                });
-        
-            ImGuiWhiteboard.Instance.Register(DrawGUI).AddTo(this);
         }
 
-        public override void OnStartClient()
+        private void OnDestroy()
         {
-            foreach (StateLogic logic in _logicTable.Values)
-                logic.InitializeClient();
+            _fsm.Dispose();
         }
 
-        public override void OnStartServer()
-        {
-            foreach (StateLogic logic in _logicTable.Values)
-                logic.InitializeServer();
-        }
-
-        private void DrawGUI()
-        {
-            GUILayout.Label("[GAME MODE: Free-For-All]");
-            GUILayout.Label($"Current state: {GameState.Value.ToString()}");
-        
-            if (IsServerStarted) _logicTable[GameState.Value].OnServerGui();
-            if (IsClientStarted) _logicTable[GameState.Value].OnClientGui();
-            _logicTable[GameState.Value].OnGui();
-        }
-
-        private void Update()
-        {
-            if (IsClientStarted) _logicTable[GameState.Value].OnClientLogic();
-            if (IsServerStarted) _logicTable[GameState.Value].OnServerLogic();
-            _logicTable[GameState.Value].OnLogic();
-        }
+        public override void OnStartNetwork() => _fsm.OnStartNetwork(GameState);
+        public override void OnStartClient() => _fsm.OnStartClient(GameState);
+        public override void OnStartServer() => _fsm.OnStartServer(GameState);
     }
 }

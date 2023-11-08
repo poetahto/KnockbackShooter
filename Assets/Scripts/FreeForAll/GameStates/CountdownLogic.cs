@@ -1,11 +1,12 @@
 ﻿using System;
 using UniRx;
 using UnityEngine;
+using Util;
 
-namespace FreeForAll
+namespace FreeForAll.GameStates
 {
     [Serializable]
-    public class CountdownLogic : StateLogic
+    public class CountdownLogic : FfaGameModeNetworkedState
     {
         private IDisposable _countdownCallback;
         

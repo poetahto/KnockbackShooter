@@ -16,5 +16,6 @@ MonoBehaviour:
     type: 3}
   requiredPlayers: 1
   countdownDuration: 1
-  gameDuration: 10
+  gameDuration: 200
   lives: 3
+  respawnTime: 1

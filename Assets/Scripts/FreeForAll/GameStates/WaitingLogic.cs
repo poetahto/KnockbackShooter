@@ -1,10 +1,10 @@
 ﻿using System;
 using UnityEngine;
 
-namespace FreeForAll
+namespace FreeForAll.GameStates
 {
     [Serializable]
-    public class WaitingLogic : StateLogic
+    public class WaitingLogic : FfaGameModeNetworkedState
     {
         public override void OnServerLogic()
         {

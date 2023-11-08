@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace FreeForAll
+namespace FreeForAll.GameStates
 {
     [Serializable]
-    public class GameOverLogic : StateLogic
+    public class GameOverLogic : FfaGameModeNetworkedState
     {
         // todo: show info about the game results
         // todo: prepare for loading in the next level

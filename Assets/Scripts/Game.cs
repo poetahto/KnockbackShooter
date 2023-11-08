@@ -8,6 +8,7 @@ using FishNet.Managing.Scened;
 using FishNet.Transporting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Util;
 
 /// <summary>
 /// Global state for the game.

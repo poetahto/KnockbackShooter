@@ -11,5 +11,6 @@ namespace FreeForAll
         public float countdownDuration = 10;
         public float gameDuration = 60;
         public int lives = 3;
+        public float respawnTime = 5;
     }
 }

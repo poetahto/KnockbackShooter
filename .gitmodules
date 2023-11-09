@@ -1,0 +1,9 @@
+[submodule "pt-player-3d"]
+	path = pt-player-3d
+	url = https://github.com/poetahto/pt-player-3d.git
+[submodule "Packages/pt-player-3d"]
+	path = Packages/pt-player-3d
+	url = https://github.com/poetahto/pt-player-3d.git
+[submodule "Packages/pt-physics-util"]
+	path = Packages/pt-physics-util
+	url = https://github.com/poetahto/pt-physics-util.git

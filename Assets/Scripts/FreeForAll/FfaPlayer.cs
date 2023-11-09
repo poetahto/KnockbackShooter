@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using FishNet.Connection;
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
 using FreeForAll.PlayerStates;
@@ -29,6 +30,7 @@ namespace FreeForAll
         public NetworkObject respawningPrefab;
         public NetworkObject deadPrefab;
         
+        public FfaSpawn InitialSpawn { get; set; }
         public FfaGameModeSettings Settings { get; private set; }
         public NetworkObject BodyInstance { get; set; }
         public readonly SyncVar<State> PlayerState = new();
@@ -56,12 +58,6 @@ namespace FreeForAll
             _fsm.Dispose();
         }
 
-        public void ServerInitializeAt(FfaSpawn spawn)
-        {
-            Transform t = spawn.transform;
-            ServerChangeBody(alivePrefab, t.position, t.rotation);
-        }
-
         public void ServerChangeBody(NetworkObject newBody, Vector3 position, Quaternion rotation)
         {
             if (BodyInstance != null && BodyInstance.IsSpawned)
@@ -73,6 +69,11 @@ namespace FreeForAll
 
         public override void OnStartNetwork() => _fsm.OnStartNetwork(PlayerState);
         public override void OnStartClient() => _fsm.OnStartClient(PlayerState);
-        public override void OnStartServer() => _fsm.OnStartServer(PlayerState);
+        
+        public override void OnStartServer()
+        {
+            ServerChangeBody(alivePrefab, InitialSpawn.transform.position, InitialSpawn.transform.rotation);
+            _fsm.OnStartServer(PlayerState);
+        }
     }
 }

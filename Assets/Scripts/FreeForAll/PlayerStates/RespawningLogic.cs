@@ -25,7 +25,7 @@ namespace FreeForAll.PlayerStates
             Parent.RespawnTimer.ObserveComplete().Subscribe(_ => Parent.PlayerState.Value = FfaPlayer.State.Alive);
         }
 
-        public override void OnServerLogic()
+        public override void OnLogic()
         {
             Parent.RespawnTimer.Update(Time.deltaTime);
         }

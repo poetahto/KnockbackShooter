@@ -14,6 +14,18 @@
       "dependencies": {},
       "url": "https://package.openupm.com"
     },
+    "com.poetools.physics-util": {
+      "version": "file:pt-physics-util",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.poetools.player-3d": {
+      "version": "file:pt-player-3d",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.prenominal.realtimecsg": {
       "version": "file:realtime-CSG-for-unity",
       "depth": 0,

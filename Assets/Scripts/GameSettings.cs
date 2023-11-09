@@ -7,6 +7,7 @@ public class GameSettings : ScriptableObject
 {
     public string mainMenuSceneName;
     public List<LevelSettings> networkedLevels;
+    public List<ItemDefinition> items;
     public EditorLaunchContext editorContext;
 }
 

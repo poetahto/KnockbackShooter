@@ -10,7 +10,8 @@ namespace FreeForAll.PlayerStates
     public class AliveLogic : FfaPlayerNetworkedState
     {
         private KnockoutManager _knockoutManager;
-        private int _deaths;
+
+        public int Deaths { get; private set; }
 
         public override void InitializeServer()
         {
@@ -19,14 +20,14 @@ namespace FreeForAll.PlayerStates
 
         public override void OnServerEnter()
         {
-            _knockoutManager.AddObject(Parent.BodyInstance.gameObject).Subscribe(ServerHandlePlayerKnockout);
+            _knockoutManager.AddObject(Parent.BodyInstance.Value.gameObject).Subscribe(ServerHandlePlayerKnockout);
         }
 
         private void ServerHandlePlayerKnockout(KnockoutManager.KnockoutData data)
         {
-            _deaths++;
+            Deaths++;
 
-            if (_deaths > Settings.lives)
+            if (Deaths > Settings.lives)
             {
                 Parent.PlayerState.Value = FfaPlayer.State.Dead;
             }
@@ -38,7 +39,7 @@ namespace FreeForAll.PlayerStates
 
         public override void OnGui()
         {
-            GUILayout.Label($"Deaths: {_deaths}/{Settings.lives}");
+            GUILayout.Label($"Deaths: {Deaths}/{Settings.lives}");
         }
     }
 }

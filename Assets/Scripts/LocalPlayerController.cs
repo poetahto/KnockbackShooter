@@ -5,17 +5,6 @@ using pt_player_3d.Scripts.Movement;
 using pt_player_3d.Scripts.Rotation;
 using UnityEngine;
 
-// public class CollectionSystem : MonoBehaviour
-// {
-//     [SerializeField] 
-//     private Vector3 pickupSize = Vector3.one;
-//     
-//     public void Tick()
-//     {
-//         if (Physics.OverlapBoxNonAlloc())
-//     }
-// }
-
 public class LocalPlayerController : NetworkBehaviour
 {
     [SerializeField] 
@@ -24,12 +13,14 @@ public class LocalPlayerController : NetworkBehaviour
     private StandardMovementSystem _movementSystem;
     private JumpingSystem _jumpingSystem;
     private RotationSystem _rotationSystem;
+    private ItemSystem _itemSystem;
 
     private void Awake()
     {
         _movementSystem = GetComponentInChildren<StandardMovementSystem>();
         _jumpingSystem = GetComponentInChildren<JumpingSystem>();
         _rotationSystem = GetComponentInChildren<RotationSystem>();
+        _itemSystem = GetComponentInChildren<ItemSystem>();
     }
 
     public override void OnOwnershipClient(NetworkConnection prevOwner)
@@ -52,6 +43,11 @@ public class LocalPlayerController : NetworkBehaviour
             _jumpingSystem.Tick(Time.deltaTime);
             
             _rotationSystem.ApplyRotationInput(-Input.GetAxisRaw("Mouse Y"), Input.GetAxisRaw("Mouse X"));
+            
+            if (Input.GetKeyDown(KeyCode.Alpha1)) _itemSystem.RpcApplySelectItemInput(0);
+            if (Input.GetKeyDown(KeyCode.Alpha2)) _itemSystem.RpcApplySelectItemInput(1);
+            if (Input.GetKeyDown(KeyCode.Alpha3)) _itemSystem.RpcApplySelectItemInput(2);
+            if (Input.GetKeyDown(KeyCode.Mouse0)) _itemSystem.RpcApplyFireInput();
         }
     }
 }

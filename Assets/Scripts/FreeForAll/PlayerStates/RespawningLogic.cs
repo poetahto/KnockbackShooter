@@ -19,7 +19,7 @@ namespace FreeForAll.PlayerStates
 
         public override void OnServerEnter()
         {
-            Transform t = Parent.BodyInstance.transform;
+            Transform t = Parent.BodyInstance.Value.transform;
             Parent.ServerChangeBody(Parent.respawningPrefab, t.position, t.rotation);
             Parent.RespawnTimer.StartTimer(Settings.respawnTime);
             Parent.RespawnTimer.ObserveComplete().Subscribe(_ => Parent.PlayerState.Value = FfaPlayer.State.Alive);

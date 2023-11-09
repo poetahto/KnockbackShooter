@@ -8,7 +8,7 @@ namespace FreeForAll.PlayerStates
     {
         public override void OnServerEnter()
         {
-            Transform t = Parent.BodyInstance.transform;
+            Transform t = Parent.BodyInstance.Value.transform;
             Parent.ServerChangeBody(Parent.deadPrefab, t.position, t.rotation);
         }
     }

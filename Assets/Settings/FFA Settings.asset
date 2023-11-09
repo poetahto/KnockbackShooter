@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 3417389603012130088, guid: edd380449b3472941859880fc6cf4628,
     type: 3}
-  requiredPlayers: 3
+  requiredPlayers: 1
   countdownDuration: 1
   gameDuration: 200
   lives: 3

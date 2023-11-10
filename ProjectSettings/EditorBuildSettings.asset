@@ -17,6 +17,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/PlayerTest.unity
     guid: e00e24d7464caf54daaa14fddb101fa9
+  - enabled: 1
+    path: Assets/Scenes/Temple.unity
+    guid: 32f68abde59a5c94b86deda51b94095f
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 9375b4ba0b79bcf43886179f0ad4d30b,
       type: 2}

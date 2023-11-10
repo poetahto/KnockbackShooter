@@ -19,10 +19,13 @@ namespace FreeForAll.GameStates
                 .SubscribeWithState(Parent, (_, all) => all.GameState.Value = FfaGameMode.State.Playing);
         }
 
-        public override void OnServerLogic()
+        public override void OnLogic()
         {
             Parent.CountdownTimer.Update(Time.deltaTime);
-            
+        }
+
+        public override void OnServerLogic()
+        {
             int currentPlayers = Game.Instance.Network.ServerManager.Clients.Count;
             
             if (currentPlayers < Settings.requiredPlayers)

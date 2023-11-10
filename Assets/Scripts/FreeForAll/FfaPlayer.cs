@@ -1,9 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using FishNet.Connection;
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
 using FreeForAll.PlayerStates;
+using UniRx;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using Util;
 
 namespace FreeForAll
 {
@@ -29,10 +33,12 @@ namespace FreeForAll
         public NetworkObject respawningPrefab;
         public NetworkObject deadPrefab;
         
+        public FfaSpawn InitialSpawn { get; set; }
         public FfaGameModeSettings Settings { get; private set; }
-        public NetworkObject BodyInstance { get; set; }
+        public readonly SyncVar<NetworkObject> BodyInstance = new();
         public readonly SyncVar<State> PlayerState = new();
         public readonly SyncTimer RespawnTimer = new();
+        public readonly SyncVar<int> Deaths = new();
         private NetworkedStateMachine<State> _fsm;
 
         private void Awake()
@@ -51,28 +57,62 @@ namespace FreeForAll
             Settings = Addressables.LoadAssetAsync<FfaGameModeSettings>("ffa_settings").WaitForCompletion();
         }
 
+        private void Start()
+        {
+            ImGuiWhiteboard.Instance.Register(DrawGUI).AddTo(this);
+        }
+
+        private void DrawGUI()
+        {
+            string stateLabel = $"Player {OwnerId} ";
+
+            stateLabel += PlayerState.Value switch
+            {
+                State.Alive => $"[Alive] {Deaths.Value}/{Settings.lives} Lives",
+                State.Respawning => $"[Respawning] {RespawnTimer.Remaining}",
+                State.Dead => "[Dead]",
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            
+            GUILayout.Label(stateLabel);
+
+            if (BodyInstance != null && BodyInstance.Value.TryGetComponent(out ItemSystem itemSystem))
+            {
+                string itemsLabel = "    Items: ";
+                
+                foreach (int collectedItem in itemSystem.CollectedItems.Collection)
+                {
+                    if (itemSystem.SelectedItem.Value == collectedItem)
+                        itemsLabel += $"[{Game.Instance.Settings.items[collectedItem].name}] ";
+                    
+                    else itemsLabel += $"{Game.Instance.Settings.items[collectedItem].name} ";
+                }
+                
+                GUILayout.Label(itemsLabel);
+            }
+        }
+
         private void OnDestroy()
         {
             _fsm.Dispose();
         }
 
-        public void ServerInitializeAt(FfaSpawn spawn)
-        {
-            Transform t = spawn.transform;
-            ServerChangeBody(alivePrefab, t.position, t.rotation);
-        }
-
         public void ServerChangeBody(NetworkObject newBody, Vector3 position, Quaternion rotation)
         {
-            if (BodyInstance != null && BodyInstance.IsSpawned)
-                Game.Instance.Network.ServerManager.Despawn(BodyInstance);
-
-            BodyInstance = Instantiate(newBody, position, rotation);
-            Game.Instance.Network.ServerManager.Spawn(BodyInstance, Owner);
+            if (BodyInstance.Value != null && BodyInstance.Value.IsSpawned)
+                Game.Instance.Network.ServerManager.Despawn(BodyInstance.Value);
+ 
+            BodyInstance.Value = Instantiate(newBody, position, rotation);
+            Game.Instance.Network.ServerManager.Spawn(BodyInstance.Value, Owner);
         }
 
         public override void OnStartNetwork() => _fsm.OnStartNetwork(PlayerState);
         public override void OnStartClient() => _fsm.OnStartClient(PlayerState);
-        public override void OnStartServer() => _fsm.OnStartServer(PlayerState);
+        
+        public override void OnStartServer()
+        {
+            ServerChangeBody(alivePrefab, InitialSpawn.transform.position, InitialSpawn.transform.rotation);
+            _fsm.OnStartServer(PlayerState);
+        }
     }
 }

@@ -20,7 +20,7 @@ namespace Editor
         }
 
         private GameSettings _settings;
-
+ 
         private void OnEnable()
         {
             _settings = Addressables.LoadAssetAsync<GameSettings>("game_settings").WaitForCompletion();
@@ -81,6 +81,8 @@ namespace Editor
                 var menu = new GenericMenu();
                 menu.AddItem(new GUIContent("Host"), ctx.networkType == NetworkLaunchType.Host, () => ctx.networkType = NetworkLaunchType.Host);
                 menu.AddItem(new GUIContent("Client"), ctx.networkType == NetworkLaunchType.Client, () => ctx.networkType = NetworkLaunchType.Client);
+                menu.AddItem(new GUIContent("Relay Host"), ctx.networkType == NetworkLaunchType.RelayHost, () => ctx.networkType = NetworkLaunchType.RelayHost);
+                menu.AddItem(new GUIContent("Relay Client"), ctx.networkType == NetworkLaunchType.RelayClient, () => ctx.networkType = NetworkLaunchType.RelayClient);
                 menu.ShowAsContext();
             }
 
@@ -93,7 +95,9 @@ namespace Editor
                     ctx.clientPort = EditorGUILayout.IntField("Client Port", ctx.clientPort);
                     ctx.clientAddress = EditorGUILayout.TextField("Client Address", ctx.clientAddress);
                     break;
-                default: throw new ArgumentOutOfRangeException();
+                case NetworkLaunchType.RelayClient:
+                    ctx.relayClientCode = EditorGUILayout.TextField("Client Join code", ctx.relayClientCode);
+                    break;
             }
         }
 

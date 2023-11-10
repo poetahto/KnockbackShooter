@@ -9,13 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 872e15b84530490899239adce0302da5, type: 3}
-  m_Name: FFA Settings
+  m_Script: {fileID: 11500000, guid: d333c81ae2304e20858d42fae25c3f87, type: 3}
+  m_Name: Test 1
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 3417389603012130088, guid: edd380449b3472941859880fc6cf4628,
-    type: 3}
-  requiredPlayers: 1
-  countdownDuration: 5
-  gameDuration: 200
-  lives: 3
-  respawnTime: 1
+  displayName: Test Item 1
+  logic: {fileID: 11400000, guid: a5d30e4d99e108f419eff5c44cebc696, type: 2}

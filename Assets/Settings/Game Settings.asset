@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: Game Settings
   m_EditorClassIdentifier: 
   mainMenuSceneName: MainMenu
-  gameplayLevels:
-  - sceneName: SampleScene
+  networkedLevels:
   - sceneName: PlayerTest
+  items:
+  - {fileID: 11400000, guid: a832b97e7cb6ed542b2c8a46a376b87e, type: 2}
+  - {fileID: 11400000, guid: c605e72c1bf991c44819f41b7d9b05d2, type: 2}
+  - {fileID: 11400000, guid: 703e7da84705b444fa39c3e361a0c39d, type: 2}
   editorContext:
-    sceneName: PlayerTest
     networkType: 1
     hostPort: 5674
     clientPort: 5674

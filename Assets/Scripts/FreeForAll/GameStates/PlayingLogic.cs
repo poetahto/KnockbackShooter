@@ -40,9 +40,9 @@ namespace FreeForAll.GameStates
                     remainingSpawns.AddRange(_spawns);
                     Debug.LogWarning("There are more players than spawns! This leads to stacked spawning, so add more spawns!");
                 }
-
+                
                 FfaPlayer instance = Object.Instantiate(Settings.playerPrefab);
-                instance.ServerInitializeAt(TakeRandomSpawn(remainingSpawns));
+                instance.InitialSpawn = TakeRandomSpawn(remainingSpawns);
                 network.ServerManager.Spawn(instance.gameObject, connection);
                 
                 instance.PlayerState
@@ -62,7 +62,7 @@ namespace FreeForAll.GameStates
             }
         }
 
-        public override void OnServerLogic()
+        public override void OnLogic()
         {
             Parent.GameTimer.Update(Time.deltaTime);
         }

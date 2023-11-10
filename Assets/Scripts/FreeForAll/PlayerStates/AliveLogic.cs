@@ -11,8 +11,6 @@ namespace FreeForAll.PlayerStates
     {
         private KnockoutManager _knockoutManager;
 
-        public int Deaths { get; private set; }
-
         public override void InitializeServer()
         {
             _knockoutManager = Object.FindAnyObjectByType<KnockoutManager>();
@@ -25,21 +23,16 @@ namespace FreeForAll.PlayerStates
 
         private void ServerHandlePlayerKnockout(KnockoutManager.KnockoutData data)
         {
-            Deaths++;
-
-            if (Deaths > Settings.lives)
-            {
-                Parent.PlayerState.Value = FfaPlayer.State.Dead;
-            }
-            else
-            {
-                Parent.PlayerState.Value = FfaPlayer.State.Respawning;
-            }
+            Parent.Deaths.Value++;
+            
+            Parent.PlayerState.Value = Parent.Deaths.Value > Settings.lives 
+                ? FfaPlayer.State.Dead 
+                : FfaPlayer.State.Respawning;
         }
 
         public override void OnGui()
         {
-            GUILayout.Label($"Deaths: {Deaths}/{Settings.lives}");
+            GUILayout.Label($"Deaths: {Parent.Deaths.Value}/{Settings.lives}");
         }
     }
 }

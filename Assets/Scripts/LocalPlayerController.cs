@@ -1,5 +1,7 @@
-﻿using FishNet.Connection;
+﻿using DefaultNamespace;
+using FishNet.Connection;
 using FishNet.Object;
+using poetools.Core.Abstraction;
 using pt_player_3d.Scripts;
 using pt_player_3d.Scripts.Movement;
 using pt_player_3d.Scripts.Rotation;
@@ -14,6 +16,8 @@ public class LocalPlayerController : NetworkBehaviour
     private JumpingSystem _jumpingSystem;
     private RotationSystem _rotationSystem;
     private ItemSystem _itemSystem;
+    private CharacterControllerWrapper _characterController;
+    private Gravity _gravity;
 
     private void Awake()
     {
@@ -21,6 +25,8 @@ public class LocalPlayerController : NetworkBehaviour
         _jumpingSystem = GetComponentInChildren<JumpingSystem>();
         _rotationSystem = GetComponentInChildren<RotationSystem>();
         _itemSystem = GetComponentInChildren<ItemSystem>();
+        _characterController = GetComponentInChildren<CharacterControllerWrapper>();
+        _gravity = GetComponentInChildren<Gravity>();
     }
 
     public override void OnOwnershipClient(NetworkConnection prevOwner)
@@ -36,6 +42,9 @@ public class LocalPlayerController : NetworkBehaviour
     {
         if (IsOwner)
         {
+            _characterController.Tick(Time.deltaTime);
+            _gravity.Tick(Time.deltaTime);
+            
             _movementSystem.ApplyMovementInput(new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized);
             _movementSystem.Tick(Time.deltaTime);
 

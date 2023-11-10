@@ -38,6 +38,7 @@ namespace FreeForAll
         public readonly SyncVar<NetworkObject> BodyInstance = new();
         public readonly SyncVar<State> PlayerState = new();
         public readonly SyncTimer RespawnTimer = new();
+        public readonly SyncVar<int> Deaths = new();
         private NetworkedStateMachine<State> _fsm;
 
         private void Awake()
@@ -67,7 +68,7 @@ namespace FreeForAll
 
             stateLabel += PlayerState.Value switch
             {
-                State.Alive => $"[Alive] {aliveLogic.Deaths}/{Settings.lives} Lives",
+                State.Alive => $"[Alive] {Deaths.Value}/{Settings.lives} Lives",
                 State.Respawning => $"[Respawning] {RespawnTimer.Remaining}",
                 State.Dead => "[Dead]",
                 _ => throw new ArgumentOutOfRangeException()
@@ -100,7 +101,7 @@ namespace FreeForAll
         {
             if (BodyInstance.Value != null && BodyInstance.Value.IsSpawned)
                 Game.Instance.Network.ServerManager.Despawn(BodyInstance.Value);
-
+ 
             BodyInstance.Value = Instantiate(newBody, position, rotation);
             Game.Instance.Network.ServerManager.Spawn(BodyInstance.Value, Owner);
         }

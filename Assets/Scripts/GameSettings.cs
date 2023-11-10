@@ -15,6 +15,8 @@ public enum NetworkLaunchType
 {
     Host,
     Client,
+    RelayHost,
+    RelayClient,
 }
 
 [Serializable]
@@ -24,4 +26,5 @@ public class EditorLaunchContext
     public int hostPort = 5674;
     public int clientPort = 5674;
     public string clientAddress = "localhost";
+    public string relayClientCode = "";
 }
